@@ -23,6 +23,7 @@ public class GameController : MonoBehaviour
     private bool isChecking = false;                    // Evitar clicks múltiples
     public GameObject gameOverPanel;                    // Panel que sale tras perder en el juego.
     private int objetosEnPantalla = 35;                 // Número de objetos que se generarán en pantalla.
+
     void Start()
     {   
         audioSource = GetComponent<AudioSource>();
@@ -199,7 +200,7 @@ public class GameController : MonoBehaviour
 
     public void SalirDelJuego()
     {
-        SceneManager.LoadScene("GameSelector");
+        SceneLoader.Instance.LoadPreviousScene();
     }
 
 }
