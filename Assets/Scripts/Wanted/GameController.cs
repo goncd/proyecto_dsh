@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 using TMPro;
 
@@ -20,7 +21,8 @@ public class GameController : MonoBehaviour
     private int vidas = 3;                              // Vidas del juego.
     public TextMeshProUGUI puntuacionText, vidasText;   // Puntuación y vidas del juego, pero en texto.
     private bool isChecking = false;                    // Evitar clicks múltiples
-
+    public GameObject gameOverPanel;                    // Panel que sale tras perder en el juego.
+    private int objetosEnPantalla = 35;                 // Número de objetos que se generarán en pantalla.
     void Start()
     {   
         audioSource = GetComponent<AudioSource>();
@@ -29,36 +31,52 @@ public class GameController : MonoBehaviour
         GenerateCharacters(35);
     }
 
-    // función que genera los personajes que queramos, con el número indicado por parámetro.
+    // función que genera los personajes que queramos, con el número indicado por parámetro, separando 2 o 3 instancias del objeto que se está
+    // buscando, añadiéndole más dificultad al juego.
     void GenerateCharacters(int total)
     {
-        //Debug.Log("Generando " + total + " personajes");
-
-        // Limpiar personajes anteriores
         foreach (Transform child in gridParent)
         {
             Destroy(child.gameObject);
         }
 
-        // Elegir personaje objetivo y ponemos la imagen del mismo.
+        // Elegir personaje objetivo y su sprite
         targetCharacterId = Random.Range(0, characterSprites.Count);
         imagenDelObjetivo.sprite = characterSprites[targetCharacterId];
-        int targetIndex = Random.Range(0, total);
+
+        // Elegimos 3 índices únicos donde irá el personaje correcto
+        int numObjetivos = 3; 
+        HashSet<int> objetivosIndices = new HashSet<int>();
+        while (objetivosIndices.Count < numObjetivos)
+        {
+            objetivosIndices.Add(Random.Range(0, total));
+        }
 
         for (int i = 0; i < total; i++)
         {
             CharacterButton newChar = Instantiate(characterPrefab, gridParent);
 
-            int id = (i == targetIndex) ? targetCharacterId : Random.Range(0, characterSprites.Count);
+            int id;
+            if (objetivosIndices.Contains(i))
+            {
+                id = targetCharacterId;
+            }
+            else
+            {
+                // Asegurarse de que NO elige el objetivo por accidente
+                do
+                {
+                    id = Random.Range(0, characterSprites.Count);
+                } while (id == targetCharacterId);
+            }
+
             newChar.Setup(characterSprites[id], id, this);
 
-            // Posición aleatoria dentro del panel
             RectTransform charRect = newChar.GetComponent<RectTransform>();
             charRect.anchoredPosition = GetRandomPositionInside(gridParent);
-
-            //Debug.Log("Personaje creado con sprite ID: " + id);
         }
     }
+
 
     // Función con la que podemos obtener la posicion (x,y) donde poner un sprite dentro del panel negro.
     Vector2 GetRandomPositionInside(RectTransform parent)
@@ -94,7 +112,8 @@ public class GameController : MonoBehaviour
         // Liberamos el input para nuevos clicks.
         isChecking = false;
 
-        GenerateCharacters(35);
+        Debug.Log("Objetos en pantalla: " + objetosEnPantalla);
+        GenerateCharacters(objetosEnPantalla++);
     }
 
     // Función con la que podemos reproducir cualquier sonido.
@@ -121,6 +140,13 @@ public class GameController : MonoBehaviour
         feedbackTxt.color = Color.red;
         feedbackTxt.gameObject.SetActive(true);
         isChecking = true; // Bloquear input para siempre
+
+        gameOverPanel.SetActive(true);
+    }
+
+    private void AddPoints(int value)
+    {
+        GameState.Instance.Set("wanted_points", value);
     }
 
     // función con la que nos permite comprobar si el personaje, que el jugador ha clickeado, es el que se busca o no.
@@ -150,9 +176,30 @@ public class GameController : MonoBehaviour
             UpdateVidas();
 
             if(vidas <= 0)
+            {
                 MostrarHasPerdido();
+                AddPoints(Puntuacion);
+                return;
+            }
             else
                 ShowFeedback("¡Incorrecto!", Color.red);
         }
     }
+
+    public void ReintentarJuego()
+    {
+        vidas = 3;
+        Puntuacion = 0;
+        UpdateVidas();
+        UpdatePuntuacion();
+        feedbackTxt.gameObject.SetActive(false);
+        gameOverPanel.SetActive(false);
+        GenerateCharacters(35);
+    }
+
+    public void SalirDelJuego()
+    {
+        SceneManager.LoadScene("GameSelector");
+    }
+
 }
