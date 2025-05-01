@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class TimeCounter : MonoBehaviour
 {
-    private float time;
+    public float CountedTime { get; private set; }
 
     private bool isStarted = false;
 
@@ -19,6 +19,11 @@ public class TimeCounter : MonoBehaviour
         isStarted = true;
     }
 
+    public void StopCounter()
+    {
+        isStarted = false;
+    }
+
     public bool HasCounterStarted()
     {
         return isStarted;
@@ -30,16 +35,11 @@ public class TimeCounter : MonoBehaviour
         if (!isStarted)
             return;
 
-        time += Time.deltaTime;
+        CountedTime += Time.deltaTime;
 
-        timeText.text = GetText();
-    }
+        int minutes = Mathf.FloorToInt(CountedTime / 60F);
+        int seconds = Mathf.FloorToInt(CountedTime - minutes * 60F);
 
-    public string GetText()
-    {
-        int minutes = Mathf.FloorToInt(time / 60F);
-        int seconds = Mathf.FloorToInt(time - minutes * 60F);
-
-        return $"{minutes:00}:{seconds:00}";
+        timeText.text = $"{minutes:00}:{seconds:00}";
     }
 }

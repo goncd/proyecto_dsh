@@ -17,6 +17,7 @@ public class Block : MonoBehaviour
 
     void OnMouseDown()
     {
-        board.DestroyBlock(x, y, GetComponent<SpriteRenderer>().color);
+        if (board.IsGameWorking())
+            board.DestroyBlock(x, y, GetComponent<SpriteRenderer>().color);
     }
 }
