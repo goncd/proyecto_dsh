@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
@@ -8,6 +10,10 @@ public class Board : MonoBehaviour
     public int height = 10;
 
     public GameObject blockPrefab;
+
+    public TMP_Text objective;
+
+    private int objectivePoints;
 
     private GameObject[,] board;
 
@@ -23,14 +29,42 @@ public class Board : MonoBehaviour
     private Vector2 boardOffset;
 
     public TimeCounter timeCounter;
-    public PointsCounter pointsCounter;
+
+    public TMP_Text pointsCounter;
+
+    private int points = 0;
 
     public AudioClip destroySound;
 
     AudioSource audioSource;
 
+    public GameObject gameOverCanvas;
+    public Button gameOverRetryButton;
+    public Button gameOverExitButton;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    public GameObject pauseCanvas;
+    public Button pauseContinueButton;
+    public Button pauseRestartButton;
+    public Button pauseExitButton;
+    public Button pauseButton;
+
+    public GameObject gameFinishedCanvas;
+    public Button gameFinishedContinueButton;
+
+    public bool IsGameWorking()
+    {
+        return !gameOverCanvas.activeInHierarchy && !pauseCanvas.activeInHierarchy && !gameFinishedCanvas.activeInHierarchy;
+    }
+
+    private void AddPoints(int value)
+    {
+        points += value;
+        GameState.Instance.Set("samegame_points", points);
+
+        pointsCounter.text = $"Puntos: {points}";
+    }
+
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -54,6 +88,23 @@ public class Board : MonoBehaviour
                 board[x, y] = block;
             }
         }
+
+        if (GameState.Instance.Get("samegame_objective", out int pointsGoal))
+        {
+            objectivePoints = pointsGoal;
+            objective.text = $"Objetivo: {objectivePoints}";
+            objective.gameObject.SetActive(true);
+        }
+
+        gameOverRetryButton.onClick.AddListener(() => SceneLoader.Instance.ReloadCurrentScene());
+        gameOverExitButton.onClick.AddListener(() => SceneLoader.Instance.LoadPreviousScene());
+
+        pauseContinueButton.onClick.AddListener(() => { pauseCanvas.SetActive(false); if (timeCounter.CountedTime != 0f) timeCounter.StartCounter(); });
+        pauseRestartButton.onClick.AddListener(() => SceneLoader.Instance.ReloadCurrentScene());
+        pauseExitButton.onClick.AddListener(() => SceneLoader.Instance.LoadPreviousScene());
+        pauseButton.onClick.AddListener(() => { pauseCanvas.SetActive(true); timeCounter.StopCounter(); });
+
+        gameFinishedContinueButton.onClick.AddListener(() => SceneLoader.Instance.LoadPreviousScene());
     }
 
     void FindMatchingBlocks(int x, int y, Color color, List<GameObject> matches)
@@ -73,7 +124,7 @@ public class Board : MonoBehaviour
 
         matches.Add(block);
 
-        // Recurse in 4 directions
+        // Recurse in 4 directions.
         FindMatchingBlocks(x + 1, y, color, matches);
         FindMatchingBlocks(x - 1, y, color, matches);
         FindMatchingBlocks(x, y + 1, color, matches);
@@ -84,7 +135,7 @@ public class Board : MonoBehaviour
     {
         isMoving = true;
 
-        yield return new WaitForSeconds(time); // espera después de caída vertical
+        yield return new WaitForSeconds(time);
 
         for (int y = 0; y < height; y++)
         {
@@ -94,11 +145,11 @@ public class Board : MonoBehaviour
                 {
                     if (board[x, y2] != null)
                     {
-                        // Mueve el bloque hacia abajo en la matriz
+                        // Moves the block downwards.
                         board[x, y] = board[x, y2];
                         board[x, y2] = null;
 
-                        // Actualiza la posición lógica y visual
+                        // Update the logic and visual positions.
                         StartCoroutine(MoveBlockToPosition(board[x, y], GetWorldPosition(x, y)));
 
                         Block b = board[x, y].GetComponent<Block>();
@@ -127,7 +178,13 @@ public class Board : MonoBehaviour
 
         audioSource.Play();
 
-        pointsCounter.Points += (int)System.Math.Pow(toDestroy.Count - 1, 2);
+        AddPoints((int)System.Math.Pow(toDestroy.Count - 1, 2));
+
+        if (objective.gameObject.activeInHierarchy && points >= objectivePoints)
+        {
+            gameFinishedCanvas.SetActive(true);
+            timeCounter.StopCounter();
+        }
 
         foreach (GameObject block in toDestroy)
         {
@@ -163,7 +220,8 @@ public class Board : MonoBehaviour
     {
         isMoving = true;
 
-        yield return new WaitForSeconds(time); // espera después de caída vertical
+        // Wait for the vertical fall.
+        yield return new WaitForSeconds(time);
 
         for (int x = 0; x < width; x++)
         {
@@ -176,7 +234,7 @@ public class Board : MonoBehaviour
                 if (nextColumn >= width)
                     break;
 
-                // Mueve bloques horizontalmente
+                // Move blocks horizontally.
                 for (int y = 0; y < height; y++)
                 {
                     board[x, y] = board[nextColumn, y];
@@ -185,7 +243,7 @@ public class Board : MonoBehaviour
                         Block b = board[x, y].GetComponent<Block>();
                         b.x = x;
 
-                        // Mueve el bloque animadamente a su nueva posición
+                        // Move the block to its new position with an animation.
                         StartCoroutine(MoveBlockToPosition(board[x, y], GetWorldPosition(x, y)));
                     }
 
@@ -193,8 +251,16 @@ public class Board : MonoBehaviour
                 }
             }
         }
+
         isMoving = false;
 
+        yield return new WaitForSeconds(0.5f);
+
+        if (!HasMovesLeft())
+        {
+            gameOverCanvas.SetActive(true);
+            timeCounter.StopCounter();
+        }
     }
 
     private Vector2 GetWorldPosition(int x, int y)
@@ -231,7 +297,56 @@ public class Board : MonoBehaviour
         }
 
         sr.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+
         Destroy(block);
         isMoving = false;
+    }
+
+    public bool HasMovesLeft()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                GameObject current = board[x, y];
+
+                if (current == null)
+                    continue;
+
+                Color blockColor = current.GetComponent<Block>().GetComponent<SpriteRenderer>().color;
+
+                // Check if there are neighbours with the same color.
+                if (HasSameColorNeighbor(x, y, blockColor))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasSameColorNeighbor(int x, int y, Color color)
+    {
+        int[,] directions = new int[,] { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+
+        for (int i = 0; i < 4; i++)
+        {
+            int nx = x + directions[i, 0];
+            int ny = y + directions[i, 1];
+
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height)
+            {
+                GameObject neighbor = board[nx, ny];
+
+                if (neighbor == null)
+                    continue;
+
+                Color blockColor = neighbor.GetComponent<Block>().GetComponent<SpriteRenderer>().color;
+
+                if (blockColor == color)
+                    return true;
+            }
+        }
+
+        return false;
     }
 }
