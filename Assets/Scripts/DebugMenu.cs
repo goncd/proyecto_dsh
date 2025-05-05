@@ -20,6 +20,7 @@ public class GameLoader : MonoBehaviour
         sameGameLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("SameGame"));
         wantedLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Wanted"));
 
+        GameState.Instance.Set("arkanoid_objective", 400);
         GameState.Instance.Set("samegame_objective", 500);
 
         if (GameState.Instance.Get("arkanoid_points", out int arkanoid_points))
