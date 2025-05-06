@@ -60,15 +60,15 @@ public class LevelManager : MonoBehaviour
             objectivePoints = pointsGoal;
         }
 
-        gameOverRetryButton.onClick.AddListener(() => SceneLoader.Instance.ReloadCurrentScene());
-        gameOverExitButton.onClick.AddListener(() => SceneLoader.Instance.LoadPreviousScene());
+        gameOverRetryButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.ReloadCurrentScene(); });
+        gameOverExitButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.LoadPreviousScene(); });
 
         pauseContinueButton.onClick.AddListener(() => { pauseCanvas.SetActive(false); Time.timeScale = 1f; });
-        pauseRestartButton.onClick.AddListener(() => SceneLoader.Instance.ReloadCurrentScene());
-        pauseExitButton.onClick.AddListener(() => SceneLoader.Instance.LoadPreviousScene());
+        pauseRestartButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.ReloadCurrentScene(); });
+        pauseExitButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.LoadPreviousScene(); });
         pauseButton.onClick.AddListener(() => { pauseCanvas.SetActive(true); Time.timeScale = 0f; });
 
-        gameFinishedContinueButton.onClick.AddListener(() => SceneLoader.Instance.LoadPreviousScene());
+        gameFinishedContinueButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.LoadPreviousScene(); });
     }
 
     public void AddPoints(int value)
@@ -81,6 +81,7 @@ public class LevelManager : MonoBehaviour
         if(points == objectivePoints)
         {
             gameFinishedCanvas.SetActive(true);
+            Time.timeScale = 0f;
         }
     }
 
@@ -92,6 +93,7 @@ public class LevelManager : MonoBehaviour
         if(currentHealth <= 0)
         {
             gameOverCanvas.SetActive(true);
+            Time.timeScale = 0f;
         }
     }
 }
