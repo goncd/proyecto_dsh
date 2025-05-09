@@ -16,6 +16,7 @@ public class Game : MonoBehaviour
     public UnityAction OnCarCollision;
     private int points = 0;
     private int objectivePoints;
+    private bool isRestarting = false;
 
     public GameObject gameOverCanvas;
     public Button gameOverRetryButton;
@@ -70,10 +71,20 @@ public class Game : MonoBehaviour
 
     private void OnCarCollisionHandler()
     {
-        DOVirtual.DelayedCall(2.5f, ()=> {
+        if(isRestarting)
+            return;
+            
+        isRestarting = true;
+        
+        DOVirtual.DelayedCall(1.5f, ()=> {
             int currentLevel = SceneManager.GetActiveScene().buildIndex;
             SceneManager.LoadScene(currentLevel);
         });
+    }
+
+    public bool IsRestarting()
+    {
+        return isRestarting;
     }
 
     private void OnCarEntersParkHandler(Route route)
