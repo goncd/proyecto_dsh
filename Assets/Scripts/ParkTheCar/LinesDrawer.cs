@@ -35,7 +35,7 @@ public class LinesDrawer : MonoBehaviour
                 currentRoute = _car.route;
                 currentLine = currentRoute.line;
                 currentLine.Init();
-                isDrawingBlocked = false; // ← Permite volver a pintar
+                isDrawingBlocked = false;
                 OnBeginDraw?.Invoke(currentRoute);
                 return;
             }
@@ -122,7 +122,6 @@ public class LinesDrawer : MonoBehaviour
             }
         }
     }
-
 
     private void ResetDrawer()
     {
