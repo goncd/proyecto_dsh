@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -17,6 +17,7 @@ public class Game : MonoBehaviour
     private int points = 0;
     private int objectivePoints;
     private bool isRestarting = false;
+    [SerializeField] private TMP_Text levelText;
 
     public GameObject gameOverCanvas;
     public Button gameOverRetryButton;
@@ -43,6 +44,8 @@ public class Game : MonoBehaviour
         successfulParks = 0;
         OnCarEntersPark += OnCarEntersParkHandler;
         OnCarCollision += OnCarCollisionHandler;
+        int currentLevel = SceneManager.GetActiveScene().buildIndex + 1 - 5;
+        levelText.text = $"Nivel {currentLevel}";
 
         if(GameState.Instance.Get("parkthecar_objective", out int pointsGoal))
         {
