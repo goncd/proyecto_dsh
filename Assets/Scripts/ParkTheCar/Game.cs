@@ -4,6 +4,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Game : MonoBehaviour
 {
@@ -13,6 +14,22 @@ public class Game : MonoBehaviour
     private int successfulParks;
     public UnityAction<Route> OnCarEntersPark;
     public UnityAction OnCarCollision;
+    private int points = 0;
+    private int objectivePoints;
+
+    public GameObject gameOverCanvas;
+    public Button gameOverRetryButton;
+    public Button gameOverExitButton;
+
+
+    public GameObject pauseCanvas;
+    public Button pauseContinueButton;
+    public Button pauseRestartButton;
+    public Button pauseExitButton;
+    public Button pauseButton;
+
+    public GameObject gameFinishedCanvas;
+    public Button gameFinishedContinueButton;
 
     private void Awake()
     {
@@ -25,6 +42,30 @@ public class Game : MonoBehaviour
         successfulParks = 0;
         OnCarEntersPark += OnCarEntersParkHandler;
         OnCarCollision += OnCarCollisionHandler;
+
+        if(GameState.Instance.Get("parkthecar_objective", out int pointsGoal))
+        {
+            objectivePoints = pointsGoal;
+        }
+        if (SceneManager.GetActiveScene().name == "Level 1")
+        {
+            GameState.Instance.Set("parkthecar_points", 0);
+            points = 0;
+        }
+        else if (GameState.Instance.Get("parkthecar_points", out int savedPoints))
+        {
+            points = savedPoints;
+        }
+
+        gameOverRetryButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.ReloadCurrentScene(); });
+        gameOverExitButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.LoadPreviousScene(); });
+
+        pauseContinueButton.onClick.AddListener(() => { pauseCanvas.SetActive(false); Time.timeScale = 1f; });
+        pauseRestartButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.ReloadCurrentScene(); });
+        pauseExitButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.LoadPreviousScene(); });
+        pauseButton.onClick.AddListener(() => { pauseCanvas.SetActive(true); Time.timeScale = 0f; });
+
+        gameFinishedContinueButton.onClick.AddListener(() => { Time.timeScale = 1f; SceneLoader.Instance.LoadPreviousScene(); });
     }
 
     private void OnCarCollisionHandler()
@@ -42,6 +83,8 @@ public class Game : MonoBehaviour
 
         if(successfulParks == totalRoutes)
         {
+            points += 100;
+            GameState.Instance.Set("parkthecar_points", points);
             int nextLevel = SceneManager.GetActiveScene().buildIndex + 1;
             DOVirtual.DelayedCall(1.3f, ()=> {
                 if(nextLevel < SceneManager.sceneCountInBuildSettings)
@@ -50,7 +93,8 @@ public class Game : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning("No next level to load");
+                    gameFinishedCanvas.SetActive(true);
+                    Time.timeScale = 0f;
                 }
             });
         }
