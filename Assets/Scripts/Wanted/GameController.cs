@@ -23,6 +23,8 @@ public class GameController : MonoBehaviour
     private bool isChecking = false;                    // Evitar clicks múltiples
     public GameObject gameOverPanel;                    // Panel que sale tras perder en el juego.
     private int objetosEnPantalla = 35;                 // Número de objetos que se generarán en pantalla.
+    private bool movimientoActivado = false;            // Bandera que nos permitirá activar/desactivar el movimiento de los objetos en pantalla.
+
 
     void Start()
     {   
@@ -46,7 +48,7 @@ public class GameController : MonoBehaviour
         imagenDelObjetivo.sprite = characterSprites[targetCharacterId];
 
         // Elegimos 3 índices únicos donde irá el personaje correcto
-        int numObjetivos = 3; 
+        int numObjetivos = 1; 
         HashSet<int> objetivosIndices = new HashSet<int>();
         while (objetivosIndices.Count < numObjetivos)
         {
@@ -75,6 +77,13 @@ public class GameController : MonoBehaviour
 
             RectTransform charRect = newChar.GetComponent<RectTransform>();
             charRect.anchoredPosition = GetRandomPositionInside(gridParent);
+
+            if (movimientoActivado)
+            {
+                CharacterMover mover = newChar.GetComponent<CharacterMover>();
+                if (mover != null)
+                    mover.StartMoving(gridParent);
+            }
         }
     }
 
@@ -124,9 +133,26 @@ public class GameController : MonoBehaviour
             audioSource.PlayOneShot(sonido);
     }
     
+    // Gracias a esta función, podemos hacer que los personajes se puedan mover a lo largo de la pantalla.
+    void ActivarMovimiento()
+    {
+        foreach (Transform child in gridParent)
+        {
+            CharacterMover mover = child.GetComponent<CharacterMover>();
+            if (mover != null)
+                mover.StartMoving(gridParent);
+        }
+    }
+
     void UpdatePuntuacion()
     {
         puntuacionText.text = "Puntuación: " + Puntuacion;
+
+        if (!movimientoActivado && Puntuacion >= 3)
+        {
+            movimientoActivado = true;
+            ActivarMovimiento();
+        }
     }
 
     void UpdateVidas()

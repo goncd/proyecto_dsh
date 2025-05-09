@@ -1245,19 +1245,19 @@ PrefabInstance:
     - target: {fileID: 9160422252016149089, guid: 25cbfe48fc1d8444aa54fbe24ce031fc, type: 3}
       propertyPath: 'characterSprites.Array.data[0]'
       value: 
-      objectReference: {fileID: 21300000, guid: 66dc04fcbfec56946a3d6d11c9dc2679, type: 3}
+      objectReference: {fileID: 21300000, guid: bf2611aa23708a3429f7089ee5ef3f31, type: 3}
     - target: {fileID: 9160422252016149089, guid: 25cbfe48fc1d8444aa54fbe24ce031fc, type: 3}
       propertyPath: 'characterSprites.Array.data[1]'
       value: 
-      objectReference: {fileID: 21300000, guid: 53eb0800583cbe7469e62ca0f7be8fe1, type: 3}
+      objectReference: {fileID: 21300000, guid: 9730cf5a57105504e84e069c0aa21aef, type: 3}
     - target: {fileID: 9160422252016149089, guid: 25cbfe48fc1d8444aa54fbe24ce031fc, type: 3}
       propertyPath: 'characterSprites.Array.data[2]'
       value: 
-      objectReference: {fileID: 21300000, guid: 0f5e7b412e0ffaa4684dd29efc62e8e1, type: 3}
+      objectReference: {fileID: 21300000, guid: c00f6d41c13aa2842b4c3a9ff90a15e2, type: 3}
     - target: {fileID: 9160422252016149089, guid: 25cbfe48fc1d8444aa54fbe24ce031fc, type: 3}
       propertyPath: 'characterSprites.Array.data[3]'
       value: 
-      objectReference: {fileID: 21300000, guid: 2a2333f0c97f59148856304878f12add, type: 3}
+      objectReference: {fileID: 21300000, guid: 67189fdf50c85cd40868152b6f715131, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
