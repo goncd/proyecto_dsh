@@ -27,10 +27,12 @@ public class GameLoader : MonoBehaviour
         sameGameLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("SameGame"));
         wantedLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Wanted"));
         cuatroDigitosLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("CuatroDigitos"));
+
         parkTheCarLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Scenes/ParkTheCar/Level 1"));
 
         GameState.Instance.Set("arkanoid_objective", 400);
         GameState.Instance.Set("samegame_objective", 500);
+        GameState.Instance.Set("parkthecar_objective", 400);
 
         if (GameState.Instance.Get("arkanoid_points", out int arkanoid_points))
             arkanoidPoints.text = $"Puntos: {arkanoid_points}";
@@ -40,7 +42,7 @@ public class GameLoader : MonoBehaviour
 
         if (GameState.Instance.Get("wanted_points", out int wanted_points))
             wantedPoints.text = $"Puntos: {wanted_points}";
-        
+
         if(GameState.Instance.Get("cuatrodigitos_points", out int cuatrodigitos_points))
             cuatroDigitosPoints.text = $"Puntos: {cuatrodigitos_points}";
 

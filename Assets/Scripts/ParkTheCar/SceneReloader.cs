@@ -5,7 +5,9 @@ public class SceneReloader : MonoBehaviour
 {
     public void Reload()
     {
-        int currentLevel = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentLevel);
+        if (Game.Instance == null || Game.Instance.IsRestarting())
+            return;
+            
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

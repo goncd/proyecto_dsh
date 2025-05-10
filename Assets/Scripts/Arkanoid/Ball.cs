@@ -10,7 +10,7 @@ public class Ball : MonoBehaviour
     public AudioClip paddleHit;
     public AudioClip blockBreak;
     public int healthPoints = 3;
-    public HealthPointsCounter healthDisplay;
+    public LevelManager levelManager;
     public Transform player;
 
     void Start()
@@ -38,8 +38,7 @@ public class Ball : MonoBehaviour
     {
         if(other.CompareTag("Bottom"))
         {
-            healthPoints -= 1;
-            healthDisplay.HealthPoints = healthPoints;
+            levelManager.ReduceHealth();
             rb.linearVelocity = Vector3.zero;
             transform.position = new Vector3(0, 3.5f, -0.4f);
             gameStarted = false;
@@ -68,8 +67,9 @@ public class Ball : MonoBehaviour
         }
         if(collision.gameObject.CompareTag("Block"))
         {
-                audioSource.clip = blockBreak;
-                audioSource.Play();
+            audioSource.clip = blockBreak;
+            audioSource.Play();
+            levelManager.AddPoints(10);
         }
     }
 }
