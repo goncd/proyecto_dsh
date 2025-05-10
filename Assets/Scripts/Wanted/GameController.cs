@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour
 
 
     void Start()
-    {   
+    {
         audioSource = GetComponent<AudioSource>();
         UpdatePuntuacion();
         UpdateVidas();
@@ -48,7 +48,7 @@ public class GameController : MonoBehaviour
         imagenDelObjetivo.sprite = characterSprites[targetCharacterId];
 
         // Elegimos 3 índices únicos donde irá el personaje correcto
-        int numObjetivos = 1; 
+        int numObjetivos = 1;
         HashSet<int> objetivosIndices = new HashSet<int>();
         while (objetivosIndices.Count < numObjetivos)
         {
@@ -107,7 +107,7 @@ public class GameController : MonoBehaviour
         StopAllCoroutines(); // Por si se hace clic rápido varias veces
         StartCoroutine(ShowFeedbackCoroutine(message, color));
     }
-    
+
     // Corrutina de la función anterior que hace dicho cometido.
     IEnumerator ShowFeedbackCoroutine(string message, Color color)
     {
@@ -122,17 +122,16 @@ public class GameController : MonoBehaviour
         // Liberamos el input para nuevos clicks.
         isChecking = false;
 
-        Debug.Log("Objetos en pantalla: " + objetosEnPantalla);
         GenerateCharacters(objetosEnPantalla++);
     }
 
     // Función con la que podemos reproducir cualquier sonido.
     void PlaySound(AudioClip sonido)
     {
-        if(sonido != null && audioSource != null)
+        if (sonido != null && audioSource != null)
             audioSource.PlayOneShot(sonido);
     }
-    
+
     // Gracias a esta función, podemos hacer que los personajes se puedan mover a lo largo de la pantalla.
     void ActivarMovimiento()
     {
@@ -159,7 +158,7 @@ public class GameController : MonoBehaviour
     {
         vidasText.text = "Vidas: " + vidas;
     }
-    
+
     void MostrarHasPerdido()
     {
         StopAllCoroutines();
@@ -202,7 +201,7 @@ public class GameController : MonoBehaviour
             UpdatePuntuacion();
             UpdateVidas();
 
-            if(vidas <= 0)
+            if (vidas <= 0)
             {
                 MostrarHasPerdido();
                 AddPoints(Puntuacion);
