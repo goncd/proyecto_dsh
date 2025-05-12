@@ -55,6 +55,7 @@ public class GameController : MonoBehaviour
         if(tiempoRestante <= 0f)
         {
             juegoActivo = false;
+            AddPoints(Puntuacion);
             MostrarHasPerdido();
         }
     }
@@ -237,6 +238,8 @@ public class GameController : MonoBehaviour
             }
             else
                 ShowFeedback("¡Incorrecto!", Color.red);
+
+            
         }
     }
 
