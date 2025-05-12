@@ -1061,8 +1061,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 413d018762d2091ac9f42b60c29f0b2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  progressBar: {fileID: 1207635525}
-  percentageText: {fileID: 1374268896}
 --- !u!4 &1845405281
 Transform:
   m_ObjectHideFlags: 0
