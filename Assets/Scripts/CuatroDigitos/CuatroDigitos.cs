@@ -22,6 +22,8 @@ public class CuatroDigitos : MonoBehaviour
 
     private int Puntuacion = 100;
 
+    public GameObject pauseMenu;
+
     // readonly, evidentemente, hace referencia a que este dato solo sea de lectura.
     private readonly string solucionCorrecta = "2368"; // A = 2, B = 3, C = 6, D = 8
 
@@ -102,6 +104,18 @@ public class CuatroDigitos : MonoBehaviour
     {
         gameOverPanel.SetActive(false);
         Start();
+    }
+
+    public void PausarJuego()
+    {
+        audioSource.Pause();
+        pauseMenu.SetActive(true);
+    }
+
+    public void ContinuarJuego()
+    {
+        audioSource.Play();
+        pauseMenu.SetActive(false);
     }
 
     private void AddPoints(int value)
