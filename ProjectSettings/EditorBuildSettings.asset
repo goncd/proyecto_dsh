@@ -35,6 +35,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ParkTheCar/Level 4.unity
     guid: f85acadd9f711e94da1bc3215804b2a7
+  - enabled: 1
+    path: Assets/Scenes/ChickenHunter.unity
+    guid: 2ad8736f249c9cf48b7b6be903fdbd79
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
