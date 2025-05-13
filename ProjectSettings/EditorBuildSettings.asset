@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Arkanoid.unity
     guid: d457d871e0210ec46b0b2891318186f9
   - enabled: 1
+    path: Assets/Scenes/CuatroDigitos/CuatroDigitos.unity
+    guid: 988eda3f8f379734e8c3c26360b96f97
+  - enabled: 1
     path: Assets/Scenes/ParkTheCar/Level 1.unity
     guid: eb3e7db24dcea284ea0f12922c1a7568
   - enabled: 1

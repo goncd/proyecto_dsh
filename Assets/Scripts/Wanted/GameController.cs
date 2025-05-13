@@ -6,6 +6,7 @@ using TMPro;
 
 using System.Collections;
 using System.Collections.Generic;
+using NUnit.Framework.Constraints;
 
 public class GameController : MonoBehaviour
 {
@@ -23,13 +24,40 @@ public class GameController : MonoBehaviour
     private bool isChecking = false;                    // Evitar clicks múltiples
     public GameObject gameOverPanel;                    // Panel que sale tras perder en el juego.
     private int objetosEnPantalla = 35;                 // Número de objetos que se generarán en pantalla.
+    private bool movimientoActivado = false;            // Bandera que nos permitirá activar/desactivar el movimiento de los objetos en pantalla.
+    private readonly float tiempoMax = 30f;             // Tiempo total inicial del minijuego.
+    private float tiempoRestante;                       // Tiempo restante del jugador en cualquier momento del juego.
+    public TMP_Text tiempoText;                         // Tiempo restante, pero en texto.
+    private bool juegoActivo = true;                    // Bandera que, cuando el tiempo llegue a cero, se pondrá a false y detendrá el juego.
+    public GameObject pauseMenu;                        // Menú de pausa.
 
     void Start()
-    {   
+    {
         audioSource = GetComponent<AudioSource>();
         UpdatePuntuacion();
         UpdateVidas();
+        tiempoRestante = tiempoMax;
+        StartCoroutine(CuentaAtras());
         GenerateCharacters(35);
+    }
+
+    IEnumerator CuentaAtras()
+    {
+        // Mientras que haya tiempo y el juego siga activo, actualizamos el tiempo cada segundo.
+        while(tiempoRestante > 0f && juegoActivo)
+        {
+            tiempoRestante -= Time.deltaTime;
+            tiempoText.text = "Tiempo: " + Mathf.CeilToInt(tiempoRestante).ToString();
+            yield return null;
+        }
+
+        // Pero, si se acaba, ponemos la bandera a false y mostramos al jugador de que ha perdido.
+        if(tiempoRestante <= 0f)
+        {
+            juegoActivo = false;
+            AddPoints(Puntuacion);
+            MostrarHasPerdido();
+        }
     }
 
     // función que genera los personajes que queramos, con el número indicado por parámetro, separando 2 o 3 instancias del objeto que se está
@@ -46,7 +74,7 @@ public class GameController : MonoBehaviour
         imagenDelObjetivo.sprite = characterSprites[targetCharacterId];
 
         // Elegimos 3 índices únicos donde irá el personaje correcto
-        int numObjetivos = 3; 
+        int numObjetivos = 1;
         HashSet<int> objetivosIndices = new HashSet<int>();
         while (objetivosIndices.Count < numObjetivos)
         {
@@ -75,6 +103,13 @@ public class GameController : MonoBehaviour
 
             RectTransform charRect = newChar.GetComponent<RectTransform>();
             charRect.anchoredPosition = GetRandomPositionInside(gridParent);
+
+            if (movimientoActivado)
+            {
+                CharacterMover mover = newChar.GetComponent<CharacterMover>();
+                if (mover != null)
+                    mover.StartMoving(gridParent);
+            }
         }
     }
 
@@ -95,10 +130,10 @@ public class GameController : MonoBehaviour
     // Además, genera un nuevo nivel.
     void ShowFeedback(string message, Color color)
     {
-        StopAllCoroutines(); // Por si se hace clic rápido varias veces
+        StopCoroutine(nameof(ShowFeedbackCoroutine)); // Solo detenemos la corrutina de feedback
         StartCoroutine(ShowFeedbackCoroutine(message, color));
     }
-    
+
     // Corrutina de la función anterior que hace dicho cometido.
     IEnumerator ShowFeedbackCoroutine(string message, Color color)
     {
@@ -113,27 +148,43 @@ public class GameController : MonoBehaviour
         // Liberamos el input para nuevos clicks.
         isChecking = false;
 
-        Debug.Log("Objetos en pantalla: " + objetosEnPantalla);
         GenerateCharacters(objetosEnPantalla++);
     }
 
     // Función con la que podemos reproducir cualquier sonido.
     void PlaySound(AudioClip sonido)
     {
-        if(sonido != null && audioSource != null)
+        if (sonido != null && audioSource != null)
             audioSource.PlayOneShot(sonido);
     }
-    
+
+    // Gracias a esta función, podemos hacer que los personajes se puedan mover a lo largo de la pantalla.
+    void ActivarMovimiento()
+    {
+        foreach (Transform child in gridParent)
+        {
+            CharacterMover mover = child.GetComponent<CharacterMover>();
+            if (mover != null)
+                mover.StartMoving(gridParent);
+        }
+    }
+
     void UpdatePuntuacion()
     {
         puntuacionText.text = "Puntuación: " + Puntuacion;
+
+        if (!movimientoActivado && Puntuacion >= 3)
+        {
+            movimientoActivado = true;
+            ActivarMovimiento();
+        }
     }
 
     void UpdateVidas()
     {
         vidasText.text = "Vidas: " + vidas;
     }
-    
+
     void MostrarHasPerdido()
     {
         StopAllCoroutines();
@@ -141,6 +192,7 @@ public class GameController : MonoBehaviour
         feedbackTxt.color = Color.red;
         feedbackTxt.gameObject.SetActive(true);
         isChecking = true; // Bloquear input para siempre
+        juegoActivo = false; // y paramos el juego.
 
         gameOverPanel.SetActive(true);
     }
@@ -162,6 +214,7 @@ public class GameController : MonoBehaviour
         {
             PlaySound(AciertoSound);
             Puntuacion += 3;
+            tiempoRestante += 6f;
             UpdatePuntuacion();
             ShowFeedback("¡Correcto!", Color.green);
         }
@@ -170,13 +223,14 @@ public class GameController : MonoBehaviour
             PlaySound(FalloSound);
             Puntuacion -= 2;
             vidas -= 1;
+            tiempoRestante -= 4f;
 
             if (Puntuacion < 0) Puntuacion = 0;
 
             UpdatePuntuacion();
             UpdateVidas();
 
-            if(vidas <= 0)
+            if (vidas <= 0)
             {
                 MostrarHasPerdido();
                 AddPoints(Puntuacion);
@@ -184,6 +238,8 @@ public class GameController : MonoBehaviour
             }
             else
                 ShowFeedback("¡Incorrecto!", Color.red);
+
+            
         }
     }
 
@@ -193,14 +249,39 @@ public class GameController : MonoBehaviour
         Puntuacion = 0;
         UpdateVidas();
         UpdatePuntuacion();
+
         feedbackTxt.gameObject.SetActive(false);
         gameOverPanel.SetActive(false);
+
+        isChecking = false;
+        movimientoActivado = false;
+
+        tiempoRestante = tiempoMax;
+        tiempoText.text = "Tiempo: " + Mathf.CeilToInt(tiempoRestante).ToString();
+        juegoActivo = true;
+        StartCoroutine(CuentaAtras());
+
         GenerateCharacters(35);
+    }
+
+    public void PausarJuego()
+    {
+        Time.timeScale = 0f; // Detiene la simulación.
+        pauseMenu.SetActive(true);
+        isChecking = true;  // Opcional, evita clicks mientras esté el juego en pausa.
+    }
+
+    public void ContinuarJuego()
+    {
+        Time.timeScale = 1f; // Reanuda el juego.
+        pauseMenu.SetActive(false);
+        isChecking = false;
     }
 
     public void SalirDelJuego()
     {
-        SceneLoader.Instance.LoadPreviousScene();
+        Time.timeScale = 1f; // Por si queremos salir desde pausa.
+        SceneLoader.Instance.LoadPreviousScene(); // O carga el menú principal.
     }
 
 }

@@ -1,4 +1,5 @@
 using TMPro;
+using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,12 +17,17 @@ public class GameLoader : MonoBehaviour
     public Button parkTheCarLoad;
     public TMP_Text parkTheCarPoints;
 
+    public Button cuatroDigitosLoad;
+    public TMP_Text cuatroDigitosPoints;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         arkanoidLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Arkanoid"));
         sameGameLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("SameGame"));
         wantedLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Wanted"));
+        cuatroDigitosLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("CuatroDigitos"));
+
         parkTheCarLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Scenes/ParkTheCar/Level 1"));
 
         GameState.Instance.Set("arkanoid_objective", 400);
@@ -36,7 +42,10 @@ public class GameLoader : MonoBehaviour
 
         if (GameState.Instance.Get("wanted_points", out int wanted_points))
             wantedPoints.text = $"Puntos: {wanted_points}";
-            
+
+        if(GameState.Instance.Get("cuatrodigitos_points", out int cuatrodigitos_points))
+            cuatroDigitosPoints.text = $"Puntos: {cuatrodigitos_points}";
+
         if(GameState.Instance.Get("parkthecar_points", out int parkthecar_points))
             parkTheCarPoints.text = $"Puntos: {parkthecar_points}";
     }
