@@ -126,8 +126,39 @@ public class GameManager : MonoBehaviour
         return result;
     }
 
+    private void ResetAllDigits()
+    {
+        InitialPosition[] digits = digitsPanel.GetComponentsInChildren<InitialPosition>(true); // incluye ocultos
+
+        foreach (InitialPosition digit in digits)
+        {
+            digit.ResetPosition();
+        }
+
+        // También revisamos los slots, por si algún número quedó como hijo de ellos
+        foreach (Transform slot in minuendSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                InitialPosition digit = slot.GetChild(0).GetComponent<InitialPosition>();
+                if (digit != null) digit.ResetPosition();
+            }
+        }
+
+        foreach (Transform slot in subtrahendSlots)
+        {
+            if (slot.childCount > 0)
+            {
+                InitialPosition digit = slot.GetChild(0).GetComponent<InitialPosition>();
+                if (digit != null) digit.ResetPosition();
+            }
+        }
+    }
+
+
     public void ReintentarJuego()
     {
+        ResetAllDigits();
         gameOverPanel.SetActive(false);
         Start();
     }
