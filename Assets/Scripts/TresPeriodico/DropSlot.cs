@@ -13,12 +13,10 @@ public class DropSlot : MonoBehaviour, IDropHandler
 
             if (arrastrar != null)
             {
-                // Si este slot ya tiene un hijo, lo devuelves o destruyes
                 if (transform.childCount > 0)
                 {
                     Transform hijoExistente = transform.GetChild(0);
-                    hijoExistente.SetParent(arrastrar.parentToReturnTo); // devolver al lugar original
-                    // O destruir: Destroy(hijoExistente.gameObject);
+                    hijoExistente.SetParent(arrastrar.parentToReturnTo);
                 }
 
                 // Asignar el nuevo padre al slot actual
