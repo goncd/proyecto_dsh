@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using System.Linq;
+using System.Collections;
 using TMPro;
 
 public class GameManager : MonoBehaviour
@@ -27,13 +25,20 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         MostrarEnunciado();
+        resultText.text = "";
+        audioSource = GetComponent<AudioSource>();
+        audioSource.loop = true;
+        audioSource.clip = musicaFondo;
+        puntuacionText.text = "Puntuación: " + Puntuacion;
+        audioSource.Play();
     }
 
     void MostrarEnunciado()
     {
         enunciadoText.text = "Este es el problema llamado \"33333\", creo que ya sabes porque se llama así." +
         " Pues bueno, ¿ves los números que tienes arriba del 1 al 9? Rellena las casillas con esos números. 5 de " +
-        " esos números son para el minuendo, los cuatro restantes para el sustraendo. Completa la ecuación para que dé dicho resultado.";
+        " esos números son para el minuendo, los cuatro restantes para el sustraendo. Completa la ecuación para que dé dicho resultado.\n" +
+        "Piensa bien el resultado, si fallas, los puntos se restarán.";
     }
 
     public void Verify()
@@ -41,25 +46,60 @@ public class GameManager : MonoBehaviour
         string minuendStr = GetNumberFromSlots(minuendSlots);
         string subtrahendStr = GetNumberFromSlots(subtrahendSlots);
 
-        if (minuendStr.Length != 5 || subtrahendStr.Length != 4)
+        StartCoroutine(ComprobarSolucion(minuendStr, subtrahendStr));
+    }
+
+    IEnumerator ComprobarSolucion(string minuendo, string sustraendo)
+    {
+        // Parar música de fondo y reproducir música de espera
+        audioSource.Stop();
+        audioSource.loop = false;
+        audioSource.clip = esperaSound;
+        audioSource.Play();
+
+        resultText.text = "Comprobando...";
+        resultText.color = Color.yellow;
+
+        yield return new WaitForSeconds(3f);
+
+        // Paramos la música de espera antes de reproducir el resultado
+        audioSource.Stop();
+
+        if (minuendo.Length != 5 || sustraendo.Length != 4)
         {
             resultText.text = "Debes usar 5 dígitos en el minuendo y 4 en el sustraendo.";
-            return;
         }
 
-        int minuend = int.Parse(minuendStr);
-        int subtrahend = int.Parse(subtrahendStr);
+        int minuend = int.Parse(minuendo);
+        int subtrahend = int.Parse(sustraendo);
 
         if (minuend - subtrahend == 33333)
         {
+            audioSource.PlayOneShot(correctoSound);
             resultText.text = "¡Correcto!";
+            resultText.color = Color.green;
+
+            // Añadimos la puntuación por haber superado el juego a la puntuación global.
+            AddPoints(Puntuacion);
+
+            // Activamos el panel de Game Over.
+            gameOverPanel.SetActive(true);
         }
         else
         {
-            resultText.text = "Incorrecto, inténtalo de nuevo.";
-        }
-    }
+            audioSource.PlayOneShot(incorrectoSound);
+            resultText.text = "Incorrecto. Intenta de nuevo.";
+            resultText.color = Color.red;
+            
+            if(Puntuacion > 0)
+                Puntuacion -= 10;
 
+            yield return new WaitForSeconds(1f);
+            gameOverPanel.SetActive(true);
+        }
+
+
+    }
 
     private string GetNumberFromSlots(Transform parent)
     {
@@ -84,5 +124,33 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("Resultado: " + result);
         return result;
+    }
+
+    public void ReintentarJuego()
+    {
+        gameOverPanel.SetActive(false);
+        Start();
+    }
+
+    public void PausarJuego()
+    {
+        audioSource.Pause();
+        pauseMenu.SetActive(true);
+    }
+
+    public void ContinuarJuego()
+    {
+        audioSource.Play();
+        pauseMenu.SetActive(false);
+    }
+
+    private void AddPoints(int value)
+    {
+        GameState.Instance.Set("tresperiodico_points", value);
+    }
+
+    public void SalirDelJuego()
+    {
+        SceneLoader.Instance.LoadPreviousScene();
     }
 }
