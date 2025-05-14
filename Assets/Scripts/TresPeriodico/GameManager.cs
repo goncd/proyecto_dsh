@@ -70,6 +70,8 @@ public class GameManager : MonoBehaviour
         if (minuendo.Length != 5 || sustraendo.Length != 4)
         {
             resultText.text = "Debes usar 5 dígitos en el minuendo y 4 en el sustraendo.";
+            audioSource.clip = musicaFondo;
+            audioSource.Play();
         }
         else
         {
