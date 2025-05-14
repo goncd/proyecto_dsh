@@ -22,6 +22,8 @@ public class GameManager : MonoBehaviour
 
     public GameObject pauseMenu;
 
+    private Transform lastParent;
+
     void Start()
     {
         MostrarEnunciado();
@@ -109,7 +111,8 @@ public class GameManager : MonoBehaviour
         {
             if (slot.childCount > 0)
             {
-                TextMeshProUGUI digitText = slot.GetComponentInChildren<TextMeshProUGUI>();
+                TextMeshProUGUI digitText = slot.GetChild(0).GetComponentInChildren<TextMeshProUGUI>();
+
                 if (digitText != null)
                 {
                     result += digitText.text;

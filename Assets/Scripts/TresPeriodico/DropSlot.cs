@@ -5,12 +5,24 @@ public class DropSlot : MonoBehaviour, IDropHandler
 {
     public void OnDrop(PointerEventData eventData)
     {
-        if (transform.childCount == 0)
+        GameObject dragged = eventData.pointerDrag;
+
+        if (dragged != null)
         {
-            ArrastrarNumeros d = eventData.pointerDrag.GetComponent<ArrastrarNumeros>();
-            if (d != null)
+            ArrastrarNumeros arrastrar = dragged.GetComponent<ArrastrarNumeros>();
+
+            if (arrastrar != null)
             {
-                d.parentToReturnTo = this.transform;
+                // Si este slot ya tiene un hijo, lo devuelves o destruyes
+                if (transform.childCount > 0)
+                {
+                    Transform hijoExistente = transform.GetChild(0);
+                    hijoExistente.SetParent(arrastrar.parentToReturnTo); // devolver al lugar original
+                    // O destruir: Destroy(hijoExistente.gameObject);
+                }
+
+                // Asignar el nuevo padre al slot actual
+                arrastrar.parentToReturnTo = this.transform;
             }
         }
     }

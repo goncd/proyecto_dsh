@@ -13,19 +13,20 @@ public class ArrastrarNumeros : MonoBehaviour, IBeginDragHandler, IDragHandler, 
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        parentToReturnTo = this.transform.parent;
-        this.transform.SetParent(this.transform.root); // Para arrastrar por encima del resto
+        parentToReturnTo = transform.parent;
+        transform.SetParent(transform.root);
         canvasGroup.blocksRaycasts = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        this.transform.position = eventData.position;
+        transform.position = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        this.transform.SetParent(parentToReturnTo);
+        transform.SetParent(parentToReturnTo);
         canvasGroup.blocksRaycasts = true;
     }
+
 }
