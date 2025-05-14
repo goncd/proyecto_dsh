@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
     {
         enunciadoText.text = "Este es el problema llamado \"33333\", creo que ya sabes porque se llama así." +
         " Pues bueno, ¿ves los números que tienes arriba del 1 al 9? Rellena las casillas con esos números. 5 de " +
-        " esos números son para el minuendo, los cuatro restantes para el sustraendo. Completa la ecuación para que dé dicho resultado.\n" +
+        "esos números son para el minuendo, los cuatro restantes para el sustraendo. Completa la ecuación para que dé dicho resultado.\n" +
         "Piensa bien el resultado, si fallas, los puntos se restarán.";
     }
 
@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
         resultText.color = Color.yellow;
 
         yield return new WaitForSeconds(3f);
-
+        
         // Paramos la música de espera antes de reproducir el resultado
         audioSource.Stop();
 
@@ -69,36 +69,36 @@ public class GameManager : MonoBehaviour
         {
             resultText.text = "Debes usar 5 dígitos en el minuendo y 4 en el sustraendo.";
         }
-
-        int minuend = int.Parse(minuendo);
-        int subtrahend = int.Parse(sustraendo);
-
-        if (minuend - subtrahend == 33333)
-        {
-            audioSource.PlayOneShot(correctoSound);
-            resultText.text = "¡Correcto!";
-            resultText.color = Color.green;
-
-            // Añadimos la puntuación por haber superado el juego a la puntuación global.
-            AddPoints(Puntuacion);
-
-            // Activamos el panel de Game Over.
-            gameOverPanel.SetActive(true);
-        }
         else
         {
-            audioSource.PlayOneShot(incorrectoSound);
-            resultText.text = "Incorrecto. Intenta de nuevo.";
-            resultText.color = Color.red;
-            
-            if(Puntuacion > 0)
-                Puntuacion -= 10;
+            int minuend = int.Parse(minuendo);
+            int subtrahend = int.Parse(sustraendo);
 
-            yield return new WaitForSeconds(1f);
-            gameOverPanel.SetActive(true);
+            if (minuend - subtrahend == 33333)
+            {
+                audioSource.PlayOneShot(correctoSound);
+                resultText.text = "¡Correcto!";
+                resultText.color = Color.green;
+
+                // Añadimos la puntuación por haber superado el juego a la puntuación global.
+                AddPoints(Puntuacion);
+
+                // Activamos el panel de Game Over.
+                gameOverPanel.SetActive(true);
+            }
+            else
+            {
+                audioSource.PlayOneShot(incorrectoSound);
+                resultText.text = "Incorrecto. Intenta de nuevo.";
+                resultText.color = Color.red;
+                
+                if(Puntuacion > 0)
+                    Puntuacion -= 10;
+
+                yield return new WaitForSeconds(1f);
+                gameOverPanel.SetActive(true);
+            }
         }
-
-
     }
 
     private string GetNumberFromSlots(Transform parent)
