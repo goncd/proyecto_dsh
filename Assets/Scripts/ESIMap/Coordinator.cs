@@ -56,6 +56,9 @@ public class Coordinator : MonoBehaviour
 
     private void OnStartButton()
     {
+        if (introCanvas.GetComponent<CanvasGroup>().alpha != 1f)
+            return;
+
         StartCoroutine(TransitionToGameMode(playerCamera, playerRealPosition, 3f));
         StartCoroutine(FadeOutCanvas(introCanvas, 1.5f));
     }
