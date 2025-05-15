@@ -23,6 +23,9 @@ public class GameLoader : MonoBehaviour
     public Button chickenHunterLoad;
     public TMP_Text chickenHunterPoints;
 
+    public Button tresPeriodicoLoad;
+    public TMP_Text tresPeriodicoPoints;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -32,6 +35,7 @@ public class GameLoader : MonoBehaviour
         cuatroDigitosLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("CuatroDigitos"));
         parkTheCarLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Scenes/ParkTheCar/Level 1"));
         chickenHunterLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("ChickenHunter"));
+        tresPeriodicoLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("TresPeriodico"));
 
         GameState.Instance.Set("arkanoid_objective", 400);
         GameState.Instance.Set("samegame_objective", 500);
@@ -55,5 +59,8 @@ public class GameLoader : MonoBehaviour
         
         if(GameState.Instance.Get("chickenhunter_points", out int chickenhunter_points))
             chickenHunterPoints.text = $"Puntos: {chickenhunter_points}";
+
+        if(GameState.Instance.Get("tresperiodico_points", out int tresperiodico_points))
+            tresPeriodicoPoints.text = $"Puntos: {tresperiodico_points}";
     }
 }
