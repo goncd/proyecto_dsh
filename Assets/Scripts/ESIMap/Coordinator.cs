@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,7 +6,6 @@ using UnityEngine.UI;
 public class Coordinator : MonoBehaviour
 {
     public GameObject[] disableWhenPaused;
-
 
     public GameObject introCanvas;
     public GameObject creditsCanvas;
@@ -27,6 +27,10 @@ public class Coordinator : MonoBehaviour
 
     public Transform playerRealPosition;
 
+    private bool isUIActive = true;
+
+    private bool wasUIAlreadyDisabled = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -40,7 +44,14 @@ public class Coordinator : MonoBehaviour
 
         StartCoroutine(FadeInCanvas(introCanvas, 1f));
 
-        ToggleUI(false);
+
+        if (GameState.Instance.Get("player_transform", out Tuple<Vector3, Quaternion> oldPlayerTransform))
+        {
+            playerCamera.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
+            introCanvas.SetActive(false);
+        }
+        else
+            ToggleUI(false);
     }
 
     private void OnStartButton()
@@ -73,8 +84,13 @@ public class Coordinator : MonoBehaviour
         }
     }
 
-    void ToggleUI(bool isActive)
+    public void ToggleUI(bool isActive)
     {
+        if (!isUIActive && !isActive)
+            wasUIAlreadyDisabled = true;
+
+        isUIActive = isActive;
+
         foreach (GameObject gameObject in disableWhenPaused)
             gameObject.SetActive(isActive);
 
@@ -142,7 +158,10 @@ public class Coordinator : MonoBehaviour
     {
         pauseCanvas.SetActive(false);
 
-        ToggleUI(true);
+        if (wasUIAlreadyDisabled)
+            wasUIAlreadyDisabled = false;
+        else
+            ToggleUI(true);
     }
 
     private void OnPauseRestartButton()
@@ -151,5 +170,4 @@ public class Coordinator : MonoBehaviour
 
         SceneLoader.Instance.ReloadCurrentScene();
     }
-
 }

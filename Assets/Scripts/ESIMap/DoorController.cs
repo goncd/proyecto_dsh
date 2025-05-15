@@ -18,23 +18,20 @@ public class DoorController : MonoBehaviour
         closedRotation = doorTransform.rotation;
         openRotation = Quaternion.Euler(doorTransform.eulerAngles + new Vector3(0, openAngle, 0));
 
-        // Busca automáticamente la cámara del jugador (usa el tag "MainCamera")
+        // Look for the player camera (which must have the "MainCamera" tag).
         playerCamera = Camera.main;
 
         if (playerCamera == null)
-        {
-            Debug.LogWarning("No se encontró ninguna cámara con el tag 'MainCamera'.");
-        }
+            Debug.LogWarning("No se ha encontrado ninguna cámara con el tag 'MainCamera'.");
     }
 
     void Update()
     {
-        if (playerCamera == null) return;
+        if (playerCamera == null)
+            return;
 
         if (Input.GetKeyDown(openKey) && IsLookingAtDoor())
-        {
             isOpen = !isOpen;
-        }
 
         Quaternion targetRotation = isOpen ? openRotation : closedRotation;
         doorTransform.rotation = Quaternion.Slerp(doorTransform.rotation, targetRotation, Time.deltaTime * openSpeed);
@@ -42,11 +39,11 @@ public class DoorController : MonoBehaviour
 
     bool IsLookingAtDoor()
     {
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        Ray ray = new(playerCamera.transform.position, playerCamera.transform.forward);
+
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
-        {
             return hit.transform == doorTransform;
-        }
+
         return false;
     }
 }
