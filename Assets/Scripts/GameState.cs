@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class GameState : MonoBehaviour
 {
@@ -58,6 +59,13 @@ public class GameState : MonoBehaviour
 
         var = default;
         return false;
+    }
+
+    public void SendToMinigame(string name)
+    {
+        Set("player_transform", new Tuple<Vector3, Quaternion>(Camera.main.transform.position, Camera.main.transform.rotation));
+
+        SceneLoader.Instance.LoadScene(name);
     }
 
     public bool HasKey(string key) => data.ContainsKey(key);

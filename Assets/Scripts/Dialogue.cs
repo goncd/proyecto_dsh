@@ -37,6 +37,10 @@ public class Dialogue : MonoBehaviour
 
     private bool canvasIsFullyShown = false;
 
+    public bool IsBeingShown() => canvasIsFullyShown;
+
+    public Coordinator coordinator;
+
     public void TriggerDialogue(int index)
     {
         if (isWorking)
@@ -58,7 +62,6 @@ public class Dialogue : MonoBehaviour
             StartCoroutine(FadeInCanvas(1f));
 
             StartCoroutine(AnimateText(1f));
-
         }
     }
 
@@ -128,6 +131,8 @@ public class Dialogue : MonoBehaviour
 
     private IEnumerator FadeInCanvas(float t)
     {
+        coordinator.ToggleUI(false);
+
         canvasGroup.alpha = 0f;
 
         isWorking = true;
@@ -143,6 +148,7 @@ public class Dialogue : MonoBehaviour
 
     private IEnumerator FadeOutCanvas(float t)
     {
+
         canvasIsFullyShown = false;
 
         while (canvasGroup.alpha > 0.0f)
@@ -152,5 +158,6 @@ public class Dialogue : MonoBehaviour
         }
 
         isWorking = false;
+        coordinator.ToggleUI(true);
     }
 }
