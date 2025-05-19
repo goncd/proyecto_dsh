@@ -214,7 +214,7 @@ public class GameController : MonoBehaviour
         {
             PlaySound(AciertoSound);
             Puntuacion += 3;
-            tiempoRestante += 6f;
+            tiempoRestante += 4f;
             UpdatePuntuacion();
             ShowFeedback("¡Correcto!", Color.green);
         }
@@ -223,7 +223,7 @@ public class GameController : MonoBehaviour
             PlaySound(FalloSound);
             Puntuacion -= 2;
             vidas -= 1;
-            tiempoRestante -= 4f;
+            tiempoRestante -= 6f;
 
             if (Puntuacion < 0) Puntuacion = 0;
 
