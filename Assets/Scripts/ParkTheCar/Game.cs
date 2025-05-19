@@ -44,7 +44,7 @@ public class Game : MonoBehaviour
         successfulParks = 0;
         OnCarEntersPark += OnCarEntersParkHandler;
         OnCarCollision += OnCarCollisionHandler;
-        int currentLevel = SceneManager.GetActiveScene().buildIndex + 1 - 5;
+        int currentLevel = SceneManager.GetActiveScene().buildIndex + 1 - 6;
         levelText.text = $"Nivel {currentLevel}";
 
         if(GameState.Instance.Get("parkthecar_objective", out int pointsGoal))
