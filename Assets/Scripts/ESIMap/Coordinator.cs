@@ -82,8 +82,10 @@ public class Coordinator : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape) && !introCanvas.activeInHierarchy && !creditsCanvas.activeInHierarchy)
         {
-            pauseCanvas.SetActive(true);
-            ToggleUI(false);
+            bool isPaused = pauseCanvas.activeInHierarchy;
+            pauseCanvas.SetActive(!isPaused);
+
+            ToggleUI(isPaused);
         }
     }
 
@@ -99,6 +101,8 @@ public class Coordinator : MonoBehaviour
 
         if (isActive)
         {
+            StartCoroutine(ReapplyCursorLockNextFrame());
+
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
@@ -152,7 +156,7 @@ public class Coordinator : MonoBehaviour
             yield return null;
         }
 
-        // Ensure the final position and rotation are exactly as they should be
+        // Ensure the final position and rotation are exactly as they should be.
         transform.SetPositionAndRotation(endTransform.position, endTransform.rotation);
         ToggleUI(true);
     }
@@ -172,5 +176,22 @@ public class Coordinator : MonoBehaviour
         Destroy(GameState.Instance);
 
         SceneLoader.Instance.ReloadCurrentScene();
+    }
+
+    void OnApplicationFocus(bool hasFocus)
+    {
+        if (hasFocus && isUIActive)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+    }
+
+    private IEnumerator ReapplyCursorLockNextFrame()
+    {
+        // Wait a single frame.
+        yield return null;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }
