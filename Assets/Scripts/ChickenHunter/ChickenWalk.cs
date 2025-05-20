@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ChikenWalk : MonoBehaviour
+public class ChickenWalk : MonoBehaviour
 {
     public Vector3 areaCenter;
     public Vector3 areaSize;
@@ -48,8 +48,7 @@ public class ChikenWalk : MonoBehaviour
                 Random.Range(-areaSize.z / 2f, areaSize.z / 2f)
             );
 
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomPoint, out hit, 2.0f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
             {
                 agent.SetDestination(hit.position);
                 return;

@@ -114,7 +114,6 @@ public class Coordinator : MonoBehaviour
         creditsBackButton.onClick.AddListener(OnCreditsBackButton);
         minigamesBackButton.onClick.AddListener(OnMinigamesBackButton);
 
-
         pauseContinueButton.onClick.AddListener(OnPauseContinueButton);
         pauseRestartButton.onClick.AddListener(OnPauseRestartButton);
 
@@ -124,9 +123,13 @@ public class Coordinator : MonoBehaviour
 
             hasFinishedLoading = true;
 
-            player.transform.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
-
             ToggleUI(true);
+
+            CharacterController playerCharacterController = player.GetComponent<CharacterController>();
+
+            playerCharacterController.enabled = false;
+            player.transform.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
+            playerCharacterController.enabled = true;
         }
         else
         {
@@ -330,10 +333,5 @@ public class Coordinator : MonoBehaviour
         GameState.Instance.Set("minigame", name);
 
         SceneLoader.Instance.LoadScene(name);
-    }
-
-    void CheckResultBack()
-    {
-
     }
 }

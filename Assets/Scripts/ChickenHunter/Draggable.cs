@@ -4,7 +4,6 @@ using UnityEngine.AI;
 public class Draggable : MonoBehaviour
 {
     private bool isDragging = false;
-    private float distanceToCamera;
     private Spawner spawner;
     private bool hasBeenDelivered = false;
 
@@ -16,10 +15,7 @@ public class Draggable : MonoBehaviour
     void OnMouseDown()
     {
         if (!hasBeenDelivered)
-        {
-            distanceToCamera = Vector3.Distance(Camera.main.transform.position, transform.position);
             isDragging = true;
-        }
     }
 
     void OnMouseUp()
@@ -30,7 +26,7 @@ public class Draggable : MonoBehaviour
         {
             hasBeenDelivered = true;
 
-            var walk = GetComponent<ChikenWalk>();
+            var walk = GetComponent<ChickenWalk>();
             if (walk != null)
             {
                 walk.areaCenter = spawner.deliveryZoneCenter;

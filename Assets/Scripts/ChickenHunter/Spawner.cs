@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class Spawner : MonoBehaviour
 {
     public GameObject prefabToSpawn;
-    private int numberToSpawn = 15;
+    private readonly int numberToSpawn = 15;
 
     [Header("Zona de spawn")]
     public Vector3 spawnAreaCenter;
@@ -15,8 +15,7 @@ public class Spawner : MonoBehaviour
     public Vector3 deliveryZoneCenter;
     public Vector3 deliveryZoneSize;
     public int chickensDelivered = 0;
-    private int objectivePoints;
-    private int points = 0;
+
     public TMP_Text chickensToBeDelivered;
     public Timer timer;
     private bool gameEnded = false;
@@ -42,7 +41,7 @@ public class Spawner : MonoBehaviour
             Vector3 randomPos = GetRandomPositionInArea();
             GameObject chicken = Instantiate(prefabToSpawn, randomPos, Quaternion.identity);
 
-            ChikenWalk walk = chicken.GetComponent<ChikenWalk>();
+            ChickenWalk walk = chicken.GetComponent<ChickenWalk>();
             if (walk != null)
             {
                 walk.areaCenter = spawnAreaCenter;
@@ -50,10 +49,7 @@ public class Spawner : MonoBehaviour
             }
         }
 
-        if(GameState.Instance.Get("parkthecar_objective", out int pointsGoal))
-        {
-            objectivePoints = pointsGoal;
-        }
+        GameState.Instance.Set("chickenhunter_objective", numberToSpawn);
 
         timer.StartTimer();
 
@@ -78,7 +74,8 @@ public class Spawner : MonoBehaviour
             gameOverCanvas.SetActive(true);
         }
 
-        if(chickensDelivered == numberToSpawn && !timer.TimeOver)
+
+        if (chickensDelivered == numberToSpawn && !timer.TimeOver)
         {
             gameFinishedCanvas.SetActive(true);
             timer.StopTimer();
@@ -115,8 +112,7 @@ public class Spawner : MonoBehaviour
     public void AddChickenDelivered()
     {
         chickensDelivered++;
-        points += 30;
-        GameState.Instance.Set("chickenhunter_points", points);
+        GameState.Instance.Set("chickenhunter_points", chickensDelivered);
 
         if (chickensToBeDelivered != null)
             chickensToBeDelivered.text = $"Gallinas restantes \n {chickensDelivered} / {numberToSpawn}";

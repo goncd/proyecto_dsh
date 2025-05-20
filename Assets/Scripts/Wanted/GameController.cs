@@ -1,12 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 using TMPro;
 
 using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework.Constraints;
 
 public class GameController : MonoBehaviour
 {
@@ -44,7 +42,7 @@ public class GameController : MonoBehaviour
     IEnumerator CuentaAtras()
     {
         // Mientras que haya tiempo y el juego siga activo, actualizamos el tiempo cada segundo.
-        while(tiempoRestante > 0f && juegoActivo)
+        while (tiempoRestante > 0f && juegoActivo)
         {
             tiempoRestante -= Time.deltaTime;
             tiempoText.text = "Tiempo: " + Mathf.CeilToInt(tiempoRestante).ToString();
@@ -52,7 +50,7 @@ public class GameController : MonoBehaviour
         }
 
         // Pero, si se acaba, ponemos la bandera a false y mostramos al jugador de que ha perdido.
-        if(tiempoRestante <= 0f)
+        if (tiempoRestante <= 0f)
         {
             juegoActivo = false;
             AddPoints(Puntuacion);
@@ -238,8 +236,6 @@ public class GameController : MonoBehaviour
             }
             else
                 ShowFeedback("¡Incorrecto!", Color.red);
-
-            
         }
     }
 

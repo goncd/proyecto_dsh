@@ -47,7 +47,7 @@ public class NPC : MonoBehaviour
 
     IEnumerator WaitThenCheckGame()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
 
         if (GameState.Instance.Get("minigame", out string minigame) && minigame == minigameCheckObjective)
         {
@@ -81,7 +81,7 @@ public class NPC : MonoBehaviour
 
     public void ChangeGameStageCyclic(int i)
     {
-        for (int g = 0; g < 5 && g <= i; g++)
+        for (int g = 0; g < 7 && g <= i; g++)
             ChangeGameStage(g);
     }
 
@@ -102,7 +102,7 @@ public class NPC : MonoBehaviour
                 break;
             case 2:
                 npcs.transform.Find("Sangre").gameObject.SetActive(true);
-                GameState.Instance.Set("samegame_objective", 1);
+                GameState.Instance.Set("samegame_objective", 500);
                 break;
             case 3:
                 npcs.transform.Find("Sangre2").gameObject.SetActive(true);
@@ -117,6 +117,19 @@ public class NPC : MonoBehaviour
                 npcs.transform.Find("Sangre").gameObject.SetActive(false);
                 npcs.transform.Find("ClosePasilloF").gameObject.SetActive(false);
                 npcs.transform.Find("Sangre2").gameObject.SetActive(false);
+                break;
+            case 6:
+                npcs.transform.Find("Final1").gameObject.SetActive(true);
+                dialogueIndex = 49;
+                GameState.Instance.Set("arkanoid_objective", 400);
+
+                break;
+
+            case 7:
+                npcs.transform.Find("Gallinas").gameObject.SetActive(false);
+                npcs.transform.Find("Final2").gameObject.SetActive(true);
+
+                dialogueIndex = 57;
                 break;
             default:
                 return;
