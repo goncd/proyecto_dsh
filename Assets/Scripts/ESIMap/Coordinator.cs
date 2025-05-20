@@ -7,6 +7,8 @@ public class Coordinator : MonoBehaviour
 {
     public GameObject[] disableWhenPaused;
 
+    public GameObject[] disableOnTitleScreen;
+
     public GameObject introCanvas;
     public GameObject creditsCanvas;
 
@@ -15,7 +17,6 @@ public class Coordinator : MonoBehaviour
     public Button startButton;
 
     public Button introCreditsButton;
-
 
     public Button creditsBackButton;
 
@@ -31,9 +32,50 @@ public class Coordinator : MonoBehaviour
 
     private bool wasUIAlreadyDisabled = false;
 
+    private bool isBeingAnimated = false;
+
+    private GameObject player;
+
+    public void SetBeingAnimated(bool beingAnimated)
+    {
+        isBeingAnimated = beingAnimated;
+    }
+
+    public void ToggleUI(bool isActive)
+    {
+        if (!isUIActive && !isActive)
+            wasUIAlreadyDisabled = true;
+
+        isUIActive = isActive;
+
+        foreach (GameObject gameObject in disableWhenPaused)
+            gameObject.SetActive(isActive);
+
+        if (isActive)
+        {
+            StartCoroutine(ReapplyCursorLockNextFrame());
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private void SetPause(bool isActive)
+    {
+        pauseCanvas.SetActive(isActive);
+        Time.timeScale = isActive ? 0f : 1f;
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        player = GameObject.FindWithTag("Player");
+
         startButton.onClick.AddListener(OnStartButton);
         introCreditsButton.onClick.AddListener(OnIntroCreditsButton);
 
@@ -44,14 +86,21 @@ public class Coordinator : MonoBehaviour
 
         StartCoroutine(FadeInCanvas(introCanvas, 1f));
 
-
         if (GameState.Instance.Get("player_transform", out Tuple<Vector3, Quaternion> oldPlayerTransform))
         {
-            playerCamera.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
             introCanvas.SetActive(false);
+
+            ToggleUI(true);
+
+            player.transform.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
         }
         else
+        {
+            foreach (GameObject gameObject in disableOnTitleScreen)
+                gameObject.SetActive(false);
+
             ToggleUI(false);
+        }
     }
 
     private void OnStartButton()
@@ -80,40 +129,19 @@ public class Coordinator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !introCanvas.activeInHierarchy && !creditsCanvas.activeInHierarchy)
+        if (!isBeingAnimated && Input.GetKeyDown(KeyCode.Escape) && !introCanvas.activeInHierarchy && !creditsCanvas.activeInHierarchy)
         {
             bool isPaused = pauseCanvas.activeInHierarchy;
-            pauseCanvas.SetActive(!isPaused);
+            SetPause(!isPaused);
 
-            ToggleUI(isPaused);
+            if (wasUIAlreadyDisabled)
+                wasUIAlreadyDisabled = false;
+            else
+                ToggleUI(isPaused);
         }
     }
 
-    public void ToggleUI(bool isActive)
-    {
-        if (!isUIActive && !isActive)
-            wasUIAlreadyDisabled = true;
-
-        isUIActive = isActive;
-
-        foreach (GameObject gameObject in disableWhenPaused)
-            gameObject.SetActive(isActive);
-
-        if (isActive)
-        {
-            StartCoroutine(ReapplyCursorLockNextFrame());
-
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-    }
-
-    IEnumerator FadeOutCanvas(GameObject canvas, float t)
+    private IEnumerator FadeOutCanvas(GameObject canvas, float t)
     {
         CanvasGroup canvasGroup = canvas.GetComponent<CanvasGroup>();
 
@@ -126,7 +154,7 @@ public class Coordinator : MonoBehaviour
         canvas.SetActive(false);
     }
 
-    IEnumerator FadeInCanvas(GameObject canvas, float t)
+    private IEnumerator FadeInCanvas(GameObject canvas, float t)
     {
         CanvasGroup canvasGroup = canvas.GetComponent<CanvasGroup>();
         canvasGroup.alpha = 0f;
@@ -140,8 +168,9 @@ public class Coordinator : MonoBehaviour
         }
     }
 
-    IEnumerator TransitionToGameMode(Transform transform, Transform endTransform, float time)
+    private IEnumerator TransitionToGameMode(Transform transform, Transform endTransform, float time)
     {
+        SetBeingAnimated(true);
         transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
         float elapsedTime = 0f;
 
@@ -158,12 +187,17 @@ public class Coordinator : MonoBehaviour
 
         // Ensure the final position and rotation are exactly as they should be.
         transform.SetPositionAndRotation(endTransform.position, endTransform.rotation);
+
+        foreach (GameObject gameObject in disableOnTitleScreen)
+            gameObject.SetActive(true);
+
+        SetBeingAnimated(false);
         ToggleUI(true);
     }
 
     private void OnPauseContinueButton()
     {
-        pauseCanvas.SetActive(false);
+        SetPause(false);
 
         if (wasUIAlreadyDisabled)
             wasUIAlreadyDisabled = false;
@@ -173,9 +207,19 @@ public class Coordinator : MonoBehaviour
 
     private void OnPauseRestartButton()
     {
+        Time.timeScale = 1f;
+
         Destroy(GameState.Instance);
 
         SceneLoader.Instance.ReloadCurrentScene();
+    }
+
+    private IEnumerator ReapplyCursorLockNextFrame()
+    {
+        // Wait a single frame.
+        yield return null;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void OnApplicationFocus(bool hasFocus)
@@ -187,11 +231,11 @@ public class Coordinator : MonoBehaviour
         }
     }
 
-    private IEnumerator ReapplyCursorLockNextFrame()
+    public void SendToMinigame(string name)
     {
-        // Wait a single frame.
-        yield return null;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        GameState.Instance.Set("player_transform", new Tuple<Vector3, Quaternion>(player.transform.position, player.transform.rotation));
+        GameState.Instance.Set("is_reset", true);
+
+        SceneLoader.Instance.LoadScene(name);
     }
 }

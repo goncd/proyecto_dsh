@@ -61,13 +61,6 @@ public class GameState : MonoBehaviour
         return false;
     }
 
-    public void SendToMinigame(string name)
-    {
-        Set("player_transform", new Tuple<Vector3, Quaternion>(Camera.main.transform.position, Camera.main.transform.rotation));
-
-        SceneLoader.Instance.LoadScene(name);
-    }
-
     public bool HasKey(string key) => data.ContainsKey(key);
     public void Clear() => data.Clear();
 }
