@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using UnityEngine;
 
 public class NPC : MonoBehaviour
@@ -12,13 +12,14 @@ public class NPC : MonoBehaviour
 
     private Camera playerCamera;
 
-    public enum GameStage
-    {
-        CierrePasilloF,
-        Sangre
-    }
-
     private GameObject npcs;
+
+    public string minigameCheckObjective;
+    public int dialogeIndexOnWin;
+
+    public int dialogueIndexOnLose;
+
+    private bool HasFinishedLoading = false;
 
     void Start()
     {
@@ -37,12 +38,31 @@ public class NPC : MonoBehaviour
                 GameState.Instance.Set("is_reset", false);
                 ChangeGameStageCyclic(last_gamestage);
             }
+
+            StartCoroutine(WaitThenCheckGame());
         }
+        else
+            HasFinishedLoading = true;
+    }
+
+    IEnumerator WaitThenCheckGame()
+    {
+        yield return new WaitForSeconds(1f);
+
+        if (GameState.Instance.Get("minigame", out string minigame) && minigame == minigameCheckObjective)
+        {
+            if (GameState.Instance.Get($"{minigame}_points", out int points) && GameState.Instance.Get($"{minigame}_objective", out int objective) && points >= objective)
+                dialogue.TriggerDialogue(dialogeIndexOnWin);
+            else
+                dialogue.TriggerDialogue(dialogueIndexOnLose);
+        }
+
+        HasFinishedLoading = true;
     }
 
     void Update()
     {
-        if (playerCamera == null)
+        if (playerCamera == null || !HasFinishedLoading)
             return;
 
         if (Input.GetKeyDown(useKey) && !dialogue.IsWorking() && IsLookingAtUs())
@@ -61,11 +81,17 @@ public class NPC : MonoBehaviour
 
     public void ChangeGameStageCyclic(int i)
     {
-        for (int g = 0; g < 3 && g <= i; g++)
+        for (int g = 0; g < 5 && g <= i; g++)
             ChangeGameStage(g);
     }
 
     public void ChangeGameStage(int i)
+    {
+        ChangeGameStageNoHide(i);
+        dialogue.HideDialogue();
+    }
+
+    public void ChangeGameStageNoHide(int i)
     {
         switch (i)
         {
@@ -76,13 +102,25 @@ public class NPC : MonoBehaviour
                 break;
             case 2:
                 npcs.transform.Find("Sangre").gameObject.SetActive(true);
-                GameState.Instance.Set("samegame_objective", 500);
+                GameState.Instance.Set("samegame_objective", 1);
+                break;
+            case 3:
+                npcs.transform.Find("Sangre2").gameObject.SetActive(true);
+                dialogueIndex = 30;
+                break;
+            case 4:
+                npcs.transform.Find("PasilloC").gameObject.SetActive(true);
+                break;
+            case 5:
+                npcs.transform.Find("Gallinas").gameObject.SetActive(true);
+
+                npcs.transform.Find("Sangre").gameObject.SetActive(false);
+                npcs.transform.Find("ClosePasilloF").gameObject.SetActive(false);
+                npcs.transform.Find("Sangre2").gameObject.SetActive(false);
                 break;
             default:
                 return;
         }
-
-        dialogue.HideDialogue();
 
         GameState.Instance.Set("last_gamestage", i);
     }
