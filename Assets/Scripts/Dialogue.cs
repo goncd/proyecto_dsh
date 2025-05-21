@@ -37,15 +37,21 @@ public class Dialogue : MonoBehaviour
 
     private bool canvasIsFullyShown = false;
 
-    public bool IsBeingShown() => canvasIsFullyShown;
+    public bool IsWorking() => isWorking;
 
     public Coordinator coordinator;
 
-    public void TriggerDialogue(int index)
+    public void HideDialogue()
     {
-        if (isWorking)
+        if (!isWorking)
             return;
 
+        StartCoroutine(FadeOutCanvas(1f));
+        nextString.gameObject.SetActive(false);
+    }
+
+    public void TriggerDialogue(int index)
+    {
         if (index >= 0 && index < dialogues.Count)
         {
             if (dialogues[index].strings.Count == 0)
@@ -57,11 +63,13 @@ public class Dialogue : MonoBehaviour
 
             textDisplayName.text = dialogues[currentDialogueItem].displayName;
             textString.text = "";
+
             nextString.gameObject.SetActive(true);
 
-            StartCoroutine(FadeInCanvas(1f));
+            StartCoroutine(AnimateText(isWorking ? 0f : 1f));
 
-            StartCoroutine(AnimateText(1f));
+            if (!isWorking)
+                StartCoroutine(FadeInCanvas(1f));
         }
     }
 
@@ -72,10 +80,13 @@ public class Dialogue : MonoBehaviour
 
         if (currentDialogueItemString + 1 >= dialogues[currentDialogueItem].strings.Count)
         {
-            StartCoroutine(FadeOutCanvas(1f));
-
-            dialogues[currentDialogueItem].onClose?.Invoke();
-            nextString.gameObject.SetActive(false);
+            if (dialogues[currentDialogueItem].onClose == null || dialogues[currentDialogueItem].onClose.GetPersistentEventCount() == 0)
+            {
+                StartCoroutine(FadeOutCanvas(1f));
+                nextString.gameObject.SetActive(false);
+            }
+            else
+                dialogues[currentDialogueItem].onClose?.Invoke();
         }
         else
         {
@@ -131,6 +142,8 @@ public class Dialogue : MonoBehaviour
 
     private IEnumerator FadeInCanvas(float t)
     {
+        canvasGroup.interactable = true;
+        coordinator.SetBeingAnimated(true);
         coordinator.ToggleUI(false);
 
         canvasGroup.alpha = 0f;
@@ -144,10 +157,13 @@ public class Dialogue : MonoBehaviour
         }
 
         canvasIsFullyShown = true;
+        coordinator.SetBeingAnimated(false);
     }
 
     private IEnumerator FadeOutCanvas(float t)
     {
+        canvasGroup.interactable = false;
+        coordinator.SetBeingAnimated(true);
 
         canvasIsFullyShown = false;
 
@@ -159,5 +175,7 @@ public class Dialogue : MonoBehaviour
 
         isWorking = false;
         coordinator.ToggleUI(true);
+        coordinator.SetBeingAnimated(false);
+
     }
 }

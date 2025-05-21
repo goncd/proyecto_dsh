@@ -37,11 +37,15 @@ public class GameState : MonoBehaviour
     // that is persistent across the scenes.
     public void Set<T>(string key, T value)
     {
+        key = key.ToLower();
+
         data[key] = value;
     }
 
     public T Get<T>(string key)
     {
+        key = key.ToLower();
+
         if (data.TryGetValue(key, out var value) && value is T typedValue)
             return typedValue;
 
@@ -51,6 +55,7 @@ public class GameState : MonoBehaviour
 
     public bool Get<T>(string key, out T var)
     {
+        key = key.ToLower();
         if (data.TryGetValue(key, out var value) && value is T typedValue)
         {
             var = typedValue;
@@ -59,13 +64,6 @@ public class GameState : MonoBehaviour
 
         var = default;
         return false;
-    }
-
-    public void SendToMinigame(string name)
-    {
-        Set("player_transform", new Tuple<Vector3, Quaternion>(Camera.main.transform.position, Camera.main.transform.rotation));
-
-        SceneLoader.Instance.LoadScene(name);
     }
 
     public bool HasKey(string key) => data.ContainsKey(key);

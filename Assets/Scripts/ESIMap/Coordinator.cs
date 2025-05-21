@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,15 +8,18 @@ public class Coordinator : MonoBehaviour
 {
     public GameObject[] disableWhenPaused;
 
+    public GameObject[] disableOnTitleScreen;
+
     public GameObject introCanvas;
     public GameObject creditsCanvas;
+
+    public GameObject minigamesCanvas;
 
     public GameObject pauseCanvas;
 
     public Button startButton;
 
     public Button introCreditsButton;
-
 
     public Button creditsBackButton;
 
@@ -27,70 +31,51 @@ public class Coordinator : MonoBehaviour
 
     public Transform playerRealPosition;
 
+    public GameObject player;
+
+    public Button introMinigamesButton;
+
+    public Button arkanoidLoad;
+    public TMP_Text arkanoidPoints;
+
+    public Button sameGameLoad;
+    public TMP_Text sameGamePoints;
+
+    public Button wantedLoad;
+    public TMP_Text wantedPoints;
+
+    public Button parkTheCarLoad;
+    public TMP_Text parkTheCarPoints;
+
+    public Button cuatroDigitosLoad;
+    public TMP_Text cuatroDigitosPoints;
+
+    public Button chickenHunterLoad;
+    public TMP_Text chickenHunterPoints;
+
+    public Button tresPeriodicoLoad;
+    public TMP_Text tresPeriodicoPoints;
+
+    public Button minigamesBackButton;
+
     private bool isUIActive = true;
 
     private bool wasUIAlreadyDisabled = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private bool isBeingAnimated = false;
+
+    private bool hasFinishedLoading = false;
+
+    public void SetBeingAnimated(bool beingAnimated)
     {
-        startButton.onClick.AddListener(OnStartButton);
-        introCreditsButton.onClick.AddListener(OnIntroCreditsButton);
-
-        creditsBackButton.onClick.AddListener(OnCreditsBackButton);
-
-        pauseContinueButton.onClick.AddListener(OnPauseContinueButton);
-        pauseRestartButton.onClick.AddListener(OnPauseRestartButton);
-
-        StartCoroutine(FadeInCanvas(introCanvas, 1f));
-
-
-        if (GameState.Instance.Get("player_transform", out Tuple<Vector3, Quaternion> oldPlayerTransform))
-        {
-            playerCamera.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
-            introCanvas.SetActive(false);
-        }
-        else
-            ToggleUI(false);
-    }
-
-    private void OnStartButton()
-    {
-        if (introCanvas.GetComponent<CanvasGroup>().alpha != 1f)
-            return;
-
-        StartCoroutine(TransitionToGameMode(playerCamera, playerRealPosition, 3f));
-        StartCoroutine(FadeOutCanvas(introCanvas, 1.5f));
-    }
-
-    private void OnIntroCreditsButton()
-    {
-        introCanvas.SetActive(false);
-
-        creditsCanvas.SetActive(true);
-    }
-
-    private void OnCreditsBackButton()
-    {
-        introCanvas.SetActive(true);
-
-        creditsCanvas.SetActive(false);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape) && !introCanvas.activeInHierarchy && !creditsCanvas.activeInHierarchy)
-        {
-            bool isPaused = pauseCanvas.activeInHierarchy;
-            pauseCanvas.SetActive(!isPaused);
-
-            ToggleUI(isPaused);
-        }
+        isBeingAnimated = beingAnimated;
     }
 
     public void ToggleUI(bool isActive)
     {
+        if (!hasFinishedLoading)
+            return;
+
         if (!isUIActive && !isActive)
             wasUIAlreadyDisabled = true;
 
@@ -113,7 +98,145 @@ public class Coordinator : MonoBehaviour
         }
     }
 
-    IEnumerator FadeOutCanvas(GameObject canvas, float t)
+    private void SetPause(bool isActive)
+    {
+        pauseCanvas.SetActive(isActive);
+        Time.timeScale = isActive ? 0f : 1f;
+    }
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        startButton.onClick.AddListener(OnStartButton);
+        introCreditsButton.onClick.AddListener(OnIntroCreditsButton);
+        introMinigamesButton.onClick.AddListener(OnIntroMinigamesButton);
+
+        creditsBackButton.onClick.AddListener(OnCreditsBackButton);
+        minigamesBackButton.onClick.AddListener(OnMinigamesBackButton);
+
+        pauseContinueButton.onClick.AddListener(OnPauseContinueButton);
+        pauseRestartButton.onClick.AddListener(OnPauseRestartButton);
+
+        if (GameState.Instance.Get("player_transform", out Tuple<Vector3, Quaternion> oldPlayerTransform))
+        {
+            introCanvas.SetActive(false);
+
+            hasFinishedLoading = true;
+
+            ToggleUI(true);
+
+            CharacterController playerCharacterController = player.GetComponent<CharacterController>();
+
+            playerCharacterController.enabled = false;
+            player.transform.SetPositionAndRotation(oldPlayerTransform.Item1, oldPlayerTransform.Item2);
+            playerCharacterController.enabled = true;
+        }
+        else
+        {
+            StartCoroutine(FadeInCanvas(introCanvas, 1f));
+
+            foreach (GameObject gameObject in disableOnTitleScreen)
+                gameObject.SetActive(false);
+
+            hasFinishedLoading = true;
+            ToggleUI(false);
+        }
+    }
+
+    private void OnStartButton()
+    {
+        if (introCanvas.GetComponent<CanvasGroup>().alpha != 1f)
+            return;
+
+        GameState.Instance.Set("arkanoid_points", 0);
+        GameState.Instance.Set("samegame_points", 0);
+        GameState.Instance.Set("wanted_points", 0);
+        GameState.Instance.Set("cuatrodigitos_points", 0);
+        GameState.Instance.Set("parkthecar_points", 0);
+        GameState.Instance.Set("chickenhunter_points", 0);
+        GameState.Instance.Set("tresperiodico_points", 0);
+
+        StartCoroutine(TransitionToGameMode(playerCamera, playerRealPosition, 3f));
+        StartCoroutine(FadeOutCanvas(introCanvas, 1.5f));
+    }
+
+    private void OnIntroCreditsButton()
+    {
+        introCanvas.SetActive(false);
+
+        creditsCanvas.SetActive(true);
+    }
+
+    private void OnIntroMinigamesButton()
+    {
+        arkanoidLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Arkanoid"));
+        sameGameLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("SameGame"));
+        wantedLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Wanted"));
+        cuatroDigitosLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("CuatroDigitos"));
+        parkTheCarLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("Scenes/ParkTheCar/Level 1"));
+        chickenHunterLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("ChickenHunter"));
+        tresPeriodicoLoad.onClick.AddListener(() => SceneLoader.Instance.LoadScene("TresPeriodico"));
+
+        if (GameState.Instance.Get("arkanoid_points", out int arkanoid_points))
+            arkanoidPoints.text = $"Puntos: {arkanoid_points}";
+
+        if (GameState.Instance.Get("samegame_points", out int samegame_points))
+            sameGamePoints.text = $"Puntos: {samegame_points}";
+
+        if (GameState.Instance.Get("wanted_points", out int wanted_points))
+            wantedPoints.text = $"Puntos: {wanted_points}";
+
+        if (GameState.Instance.Get("cuatrodigitos_points", out int cuatrodigitos_points))
+            cuatroDigitosPoints.text = $"Puntos: {cuatrodigitos_points}";
+
+        if (GameState.Instance.Get("parkthecar_points", out int parkthecar_points))
+            parkTheCarPoints.text = $"Puntos: {parkthecar_points}";
+
+        if (GameState.Instance.Get("chickenhunter_points", out int chickenhunter_points))
+            chickenHunterPoints.text = $"Puntos: {chickenhunter_points}";
+
+        if (GameState.Instance.Get("tresperiodico_points", out int tresperiodico_points))
+            tresPeriodicoPoints.text = $"Puntos: {tresperiodico_points}";
+
+        GameState.Instance.Set("arkanoid_objective", 400);
+        GameState.Instance.Set("samegame_objective", 500);
+        GameState.Instance.Set("parkthecar_objective", 400);
+        GameState.Instance.Set("chickenhunter_objective", 450);
+
+        introCanvas.SetActive(false);
+        minigamesCanvas.SetActive(true);
+    }
+
+    private void OnCreditsBackButton()
+    {
+        introCanvas.SetActive(true);
+
+        creditsCanvas.SetActive(false);
+    }
+
+    private void OnMinigamesBackButton()
+    {
+        introCanvas.SetActive(true);
+
+        minigamesCanvas.SetActive(false);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (!isBeingAnimated && Input.GetKeyDown(KeyCode.Escape) && !introCanvas.activeInHierarchy && !creditsCanvas.activeInHierarchy)
+        {
+            bool isPaused = pauseCanvas.activeInHierarchy;
+            SetPause(!isPaused);
+
+            if (wasUIAlreadyDisabled)
+                wasUIAlreadyDisabled = false;
+            else
+                ToggleUI(isPaused);
+        }
+    }
+
+    private IEnumerator FadeOutCanvas(GameObject canvas, float t)
     {
         CanvasGroup canvasGroup = canvas.GetComponent<CanvasGroup>();
 
@@ -126,7 +249,7 @@ public class Coordinator : MonoBehaviour
         canvas.SetActive(false);
     }
 
-    IEnumerator FadeInCanvas(GameObject canvas, float t)
+    private IEnumerator FadeInCanvas(GameObject canvas, float t)
     {
         CanvasGroup canvasGroup = canvas.GetComponent<CanvasGroup>();
         canvasGroup.alpha = 0f;
@@ -140,8 +263,9 @@ public class Coordinator : MonoBehaviour
         }
     }
 
-    IEnumerator TransitionToGameMode(Transform transform, Transform endTransform, float time)
+    private IEnumerator TransitionToGameMode(Transform transform, Transform endTransform, float time)
     {
+        SetBeingAnimated(true);
         transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
         float elapsedTime = 0f;
 
@@ -158,12 +282,17 @@ public class Coordinator : MonoBehaviour
 
         // Ensure the final position and rotation are exactly as they should be.
         transform.SetPositionAndRotation(endTransform.position, endTransform.rotation);
+
+        foreach (GameObject gameObject in disableOnTitleScreen)
+            gameObject.SetActive(true);
+
+        SetBeingAnimated(false);
         ToggleUI(true);
     }
 
     private void OnPauseContinueButton()
     {
-        pauseCanvas.SetActive(false);
+        SetPause(false);
 
         if (wasUIAlreadyDisabled)
             wasUIAlreadyDisabled = false;
@@ -173,9 +302,19 @@ public class Coordinator : MonoBehaviour
 
     private void OnPauseRestartButton()
     {
+        Time.timeScale = 1f;
+
         Destroy(GameState.Instance);
 
         SceneLoader.Instance.ReloadCurrentScene();
+    }
+
+    private IEnumerator ReapplyCursorLockNextFrame()
+    {
+        // Wait a single frame.
+        yield return null;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void OnApplicationFocus(bool hasFocus)
@@ -187,11 +326,12 @@ public class Coordinator : MonoBehaviour
         }
     }
 
-    private IEnumerator ReapplyCursorLockNextFrame()
+    public void SendToMinigame(string name)
     {
-        // Wait a single frame.
-        yield return null;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        GameState.Instance.Set("player_transform", new Tuple<Vector3, Quaternion>(player.transform.position, player.transform.rotation));
+        GameState.Instance.Set("is_reset", true);
+        GameState.Instance.Set("minigame", name);
+
+        SceneLoader.Instance.LoadScene(name);
     }
 }
