@@ -7,7 +7,9 @@ public class DoorController : MonoBehaviour
     public float openSpeed = 2f;
     public KeyCode openKey = KeyCode.E;
     public float interactDistance = 3f;
-
+    public AudioSource audioSource;
+    public AudioClip openSound;
+    
     private Camera playerCamera;
     private bool isOpen = false;
     private Quaternion closedRotation;
@@ -31,7 +33,11 @@ public class DoorController : MonoBehaviour
             return;
 
         if (Input.GetKeyDown(openKey) && IsLookingAtDoor())
+        {
             isOpen = !isOpen;
+            if (isOpen && audioSource != null && openSound != null)
+                audioSource.PlayOneShot(openSound);
+        }
 
         Quaternion targetRotation = isOpen ? openRotation : closedRotation;
         doorTransform.rotation = Quaternion.Slerp(doorTransform.rotation, targetRotation, Time.deltaTime * openSpeed);
