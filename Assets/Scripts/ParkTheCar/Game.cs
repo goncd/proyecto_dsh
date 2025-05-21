@@ -101,14 +101,14 @@ public class Game : MonoBehaviour
             GameState.Instance.Set("parkthecar_points", points);
             int nextLevel = SceneManager.GetActiveScene().buildIndex + 1;
             DOVirtual.DelayedCall(1.3f, ()=> {
-                if(nextLevel < SceneManager.sceneCountInBuildSettings)
-                {
-                    SceneManager.LoadScene(nextLevel);
-                }
-                else
+                if(SceneManager.GetActiveScene().name == "Level 4")
                 {
                     gameFinishedCanvas.SetActive(true);
                     Time.timeScale = 0f;
+                }
+                else if (nextLevel < SceneManager.sceneCountInBuildSettings)
+                {
+                    SceneManager.LoadScene(nextLevel);
                 }
             });
         }
